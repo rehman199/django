@@ -19,6 +19,8 @@ DEBUG = os.getenv('DEBUG') == 'True'
 
 ALLOWED_HOSTS = [os.getenv('HOST'), os.getenv('FRONTEND_URL')]
 
+SITE_URL = os.getenv('SITE_URL')
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -40,6 +42,10 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+    ],
+    'NON_FIELD_ERRORS_KEY': 'error',
     'PAGE_SIZE': 10
 }
 
@@ -47,10 +53,12 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(milliseconds=int(os.getenv('ACCESS_TOKEN_LIFETIME'))),
     "REFRESH_TOKEN_LIFETIME": timedelta(milliseconds=int(os.getenv('REFRESH_TOKEN_LIFETIME'))),
     "SIGNING_KEY": os.getenv('JWT_SIGNING_KEY'),
+    "UPDATE_LAST_LOGIN": True,
+
 }
 
 AUTHENTICATION_BACKENDS = [
-    'authentication.backends.EmailOrUsernameModelBackend',
+    'authentication.backends.VerifiedUserModelBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
 
@@ -65,9 +73,9 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [os.getenv('FRONTEND_URL')]
-CORS_ALLOW_HEADERS = ("authorization", "content-type",)
+CORS_ALLOW_HEADERS = ("authorization", "content-type", "accept")
 CORS_ALLOW_CREDENTIALS = True
-CORS_EXPOSE_HEADERS = ("authorization",)
+CORS_EXPOSE_HEADERS = ("authorization", "content-type")
 
 ROOT_URLCONF = 'ecommerce.urls'
 
@@ -146,3 +154,32 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# SMTP settings
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER')
+FRONTEND_URL = os.getenv('FRONTEND_URL')
+
+# Celery settings
+
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = os.getenv('CELERY_TIMEZONE')
+
+
+# TODO: Uncomment this when we have a proper way to delete expired tokens
+# CELERY_BEAT_SCHEDULE = {
+#     'cleanup-expired-tokens': {
+#         'task': 'authentication.tasks.cleanup_expired_tokens',
+#         'schedule': timedelta(weeks=2),
+#     },
+# }
