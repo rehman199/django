@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import uuid
-from ecommerce.settings import SITE_URL
+from backend.settings import SITE_URL
 from .tasks import send_email
 import os
 
